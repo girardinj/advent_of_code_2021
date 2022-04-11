@@ -1,5 +1,6 @@
 
 from copy import deepcopy
+from turtle import st
 from graph import Graph
 import numpy as np
 
@@ -58,9 +59,12 @@ def get_data():
     
     return directions
 
-def dive(actual_cave, visited, end):
+def dive(actual_cave, visited, end, joker_used=True, start=None):
     if actual_cave in visited:
-        return []
+        if not joker_used and actual_cave != start:
+            joker_used = True
+        else:
+            return []
     
     if actual_cave == end:
         return [[actual_cave]]
@@ -71,11 +75,11 @@ def dive(actual_cave, visited, end):
     pathes = []
     neighbours = [e.get_other_vertex(actual_cave) for e in actual_cave.get_edges()]
     for neighbour in neighbours:
-        baby_pathes = dive(neighbour, visited.copy(), end)
+        baby_pathes = dive(neighbour, visited.copy(), end, joker_used, start)
         for path in baby_pathes:
             path.insert(0, actual_cave)
             pathes.append(path)
-    
+
     return pathes
 
 
@@ -101,8 +105,8 @@ def puzzle(data):
     start = caves.pop('start')
     end = caves.pop('end')
 
-    pathes = dive(start, np.array([]), end)
-    
+    pathes = dive(start, np.array([]), end, False, start)
+
     return len(pathes)
     
     
