@@ -50,30 +50,21 @@ def puzzle1():
 def decode(signal):
 
     numbers = {}
-    for i in range(0, 9):
+    for i in range(0, 10):
         numbers[i] = None
-    
-    to_remove = []
-    for i in range(len(signal)):
-        s = signal[i]
+        
+    for s in signal:
         l = len(s)
 
         if   l == 2: #1
             numbers[1] = set(s)
-            to_remove.append(i)
         elif l == 4: #4
             numbers[4] = set(s)
-            to_remove.append(i)
         elif l == 3: #7
             numbers[7] = set(s)
-            to_remove.append(i)
         elif l == 7: #8
             numbers[8] = set(s)
-            to_remove.append(i)
         
-    to_remove.reverse()
-    for i in to_remove:
-        signal.pop(i)
     
     # we found the sure numbers, now try to find the others
     '''
@@ -103,77 +94,85 @@ def decode(signal):
     a = numbers[7].difference(numbers[1])
     assert len(a) == 1, f'error with a: {a}'
 
+
     # we can know 3 because {3} len of 5 and has {7}
-    to_pop = None
     for i in range(len(signal)):
         s = signal[i]
         if len(s) == 5:
             s = set(s)
             if numbers[7] == numbers[7].intersection(s):
                 numbers[3] = s
-                to_pop = i
                 break
-    signal.pop(to_pop)
 
     # we can know b because of {4} inter ( {8 without 3} )
     b = numbers[4].intersection(numbers[8].difference(numbers[3]))
     assert len(b) == 1, f'error with b: {b}'
 
-    # we can know {5} because len == 5, b not in {5} and {5} != {3}
-    to_pop = None
+    # we can know 2 because len == 5, b not in {2} and {5} != {3}
     for i in range(len(signal)):
         s = signal[i]
         if len(s) == 5:
             s = set(s)
             if s != numbers[3] and len(b.intersection(s)) == 0:
-                to_pop = i
-                numbers[5] = s
+                numbers[2] = s
                 break
-    signal.pop(to_pop)
 
-    # we can know e because not in {5}, not in {1} but in {8}
-    e = numbers[8].difference(numbers[5]).difference(numbers[1])
-    assert len(e) == 1, f'error with e: {e}'
 
-    # we can know 2 because len == 5, {2} != {3} and {2} != {5}
-    to_pop = None
+    # we can know 5 because len == 5, {5} != {2} and {5} != {3}
     for i in range(len(signal)):
         s = signal[i]
         if len(s) == 5:
             s = set(s)
-            if s != numbers[3] and s != numbers[5]:
-                to_pop = i
-                numbers[2] = s
+            if s != numbers[2] and s != numbers[3]:
+                numbers[5] = s
                 break
-    signal.pop(to_pop)
     
-    # we can know 6 because len == 6 and {6} has {2}
-    # we can know 9 because len == 6 and {9} has not e
-    # we can know 0 because len == 6 and is the last
+    # we can know e because not in {5}, not in {1} but in {8}
+    e = numbers[8].difference(numbers[5].union(numbers[1]))
+    assert len(e) == 1, f'error with e: {e}'
+    
+    # we can know 9 because it is {8} without e
+    numbers[9] = numbers[8].difference(e)
 
-    for i in range(len(signal)):
-        s = signal[i]
+    # we can know 6 because len = 6, the one missing is in {1}
+    for s in signal:
         if len(s) == 6:
             s = set(s)
-            
-            if numbers[2] == numbers[2].intersection(s):
+            if len(numbers[1].intersection(numbers[8].difference(s))) == 1:
                 numbers[6] = s
-            elif len(e.intersection(s)) == 0:
-                numbers[9] = s
-            else:
-                numbers[0] = s
-        else:
-            print('error with what is in signal')
-            exit(0)
+                break
 
-    i = 0
-    for v in numbers.values():
-        if v == None:
-            print('numbers not finished')
-            exit(0)
-        print(f'{i} is {v}')
-        i += 1
+    # we can know 0 because len = 6, and is not 6 neither 9
+    for s in signal:
+        if len(s) == 6:
+            s = set(s)
+            if s != numbers[6] and s != numbers[9]:
+                numbers[0] = s
+                break
+        
+
+    for k, n in numbers.items():
+        if n == None:
+            print(f'numbers not finished, {k} is None')
+            exit(-1)
     
+    # we know 0,1,2,3,4,5,7,8,9
+    # we know a,b,e
+    
+    # c is in 8 but not in 6
+    c = numbers[8].difference(numbers[6])
+    assert len(c) == 1, f'error with c: {c}'
+
+    # d is in 8 but not in 0
+    d = numbers[8].difference(numbers[0])
+    assert len(d) == 1, f'error with d: {d}'
+    
+    # f is in 1 but not in 2
+    f = numbers[1].difference(numbers[2])
+    
+    # g is in 9 but not in (4+a+e)
+    g = numbers[9].difference(numbers[4].union(a).union(e))
+
     '''
     0:      1:      2:      3:      4:
      aaaa    ....    aaaa    aaaa    ....
@@ -194,50 +193,63 @@ def decode(signal):
      gggg    gggg    ....    gggg    gggg
     '''
 
-    # so far, we know a, b and e
+    space = '  '
+    s = ''
+    s += f'{space}{a}{a}{a}{space}\n'
+    s += f'{b}{space}{space}{space}{space}{c}\n'
+    s += f'{b}{space}{space}{space}{space}{c}\n'
+    s += f'{space}{d}{d}{d}{space}\n'
+    s += f'{e}{space}{space}{space}{space}{f}\n'
+    s += f'{e}{space}{space}{space}{space}{f}\n'
+    s += f'{space}{g}{g}{g}{space}\n'
 
-    # c in {1} inter {2}
-    c = numbers[1].intersection(numbers[2])
-    assert len(c) == 1, f'error with c: {c}'
+    decoder = {'a': a, 'b': b, 'c': c, 'd': d, 'e': e, 'f': f, 'g': g}
 
-    # d in {8} but not in {0}
-    d = numbers[8].difference(numbers[0])
-    assert len(d) == 1, f'error with d: {d}'
-
-    # f in {1} inter {5}
-    f = numbers[1].intersection(numbers[5])
-    assert len(f) == 1, f'error with f: {f}'
-
-    # g in (8 - (a+b+c+d+e+f))
-    g = numbers[8].difference(a).difference(b).difference(c).difference(d).difference(e).difference(f)
-
-    p = lambda k, v: print(f'{k} is {v}')
-
-    s= ''
-    s+= f'  {a}{a}{a}{a}\n'
-    s+= f'{b}              {c}\n'
-    s+= f'{b}              {c}\n'
-    s+= f'  {d}{d}{d}{d}\n'
-    s+= f'{e}              {f}\n'
-    s+= f'{e}              {f}\n'
-    s+= f'  dddddddddddddddd\n'
-    print(s)
-    print('error with either number 2 or number 3 or number 5 (for valueb or e')
-    assert len(g) == 1, f'error with g: {g}'
-
-    print(a, b, c, d, e, f, g)
-    exit(0)
+    for k,v  in decoder.items():
+        for k2,v2 in decoder.items():
+            if k == k2:
+                continue
+            assert v != v2, f'error, multiple values in decoder\n{decoder}'
+    #   aaaa 
+    #  b    c
+    #  b    c
+    #   dddd 
+    #  e    f
+    #  e    f
+    #   gggg
+    corresp = []
+    corresp.append(set().union(decoder['a']).union(decoder['c']).union(decoder['f']).union(decoder['g']).union(decoder['e']).union(decoder['b'])) # 0
+    corresp.append(set().union(decoder['c']).union(decoder['f'])) # 1
+    corresp.append(set().union(decoder['a']).union(decoder['c']).union(decoder['d']).union(decoder['e']).union(decoder['g'])) # 2
+    corresp.append(set().union(decoder['a']).union(decoder['c']).union(decoder['d']).union(decoder['f']).union(decoder['g'])) # 3
+    corresp.append(set().union(decoder['b']).union(decoder['c']).union(decoder['d']).union(decoder['f'])) # 4
+    corresp.append(set().union(decoder['a']).union(decoder['b']).union(decoder['d']).union(decoder['f']).union(decoder['g'])) # 5
+    corresp.append(set().union(decoder['a']).union(decoder['b']).union(decoder['d']).union(decoder['e']).union(decoder['f']).union(decoder['g'])) # 6
+    corresp.append(set().union(decoder['a']).union(decoder['c']).union(decoder['f'])) # 7
+    corresp.append(set().union(decoder['a']).union(decoder['b']).union(decoder['c']).union(decoder['d']).union(decoder['e']).union(decoder['f']).union(decoder['g'])) # 8
+    corresp.append(set().union(decoder['a']).union(decoder['b']).union(decoder['c']).union(decoder['d']).union(decoder['f']).union(decoder['g'])) # 9
+    
+    # print(s)
+    # for i in range(len(corresp)):
+    #     print(f'[{i}]: {corresp[i]}')
+    return corresp
 
 
 def compute(values, decoder):
-    decoder.reverse()
     sum = 0
     for i in range(len(values)):
-        sum += 10**i * get_as_int(values[i], decoder)
+        sum += 10**(len(values)-1-i) * get_as_int(values[i], decoder)
+    # print(sum)
     return sum
 
 def get_as_int(value, decoder):
-    return value
+    v = set(value)
+    # print(value)
+    for i in range(len(decoder)):
+        if v == decoder[i]:
+            # print(i)
+            return i
+    return None
 
 def puzzle2():
     signal, output = get_data()
