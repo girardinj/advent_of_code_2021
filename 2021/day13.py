@@ -1,3 +1,4 @@
+from doctest import Example
 import re
 from functools import reduce
 import operator
@@ -50,11 +51,54 @@ def get_data():
 
 
 def print_grid(grid):
-    for row in grid:
-        for column in row:
-            print(column, end=' ')
+    for irow in range(-1, len(grid)):
+        for icolumn in range(len(grid[irow])):
+            if irow == -1:
+                if icolumn == 0:
+                    print('  0', end=' ')
+                else:
+                    print(f'{icolumn}', end=' ')
+                continue
+            if icolumn == 0:
+                print(f'{irow}', end=' ')
+            print(grid[irow][icolumn], end=' ')
         print()
+    # for row in grid:
+    #     for column in row:
+    #         print(column, end=' ')
+    #     print()
 
+def fold_up(grid, axis):    
+    print('folding on y', axis)
+    
+    if len(grid) == axis * 2:
+        keep_part = grid[:axis +1]
+    else:
+        keep_part = grid[:axis]
+
+    folded_part = grid[axis+1:]
+    
+    print_grid(keep_part)
+    print_grid(folded_part)
+    folded_part.reverse()
+    print_grid(folded_part)
+    
+    diff = len(keep_part[0]) - len(folded_part[0])
+    for irow in range(len(folded_part)):
+        for icolumn in range(len(folded_part[irow])):
+            case = folded_part[irow][icolumn]
+            if case == '#':
+                keep_part[irow][icolumn+diff] = '#'
+    
+    I CAN DO ANYTHING IT DOESNT SHOW
+    WHEN USING THE CHEAT IT WORKS, BUT THE CHEAT DOESNT RENDER RIGHT THE EXAMPLE
+    return keep_part
+
+def fold_left(grid, axis):
+    print('folding on x', axis)
+    
+   
+    return grid
 
 def puzzle1(points, instructions):
     max_x = max(points, key=lambda p: p[0])[0]
@@ -63,44 +107,38 @@ def puzzle1(points, instructions):
 
     grid = [['.' for _ in range(max_x+1)] for _ in range(max_y+1)]
 
-
+    print(len(grid), len(grid[0]))
+    
     for p in points:
         grid[p[1]][p[0]] = '#'
     
-    # print_grid(grid)
-    # print()
     for instruction in instructions:
         max_x = len(grid[0])-1
         max_y = len(grid)-1
         axis = instruction[1]
         
+        print_count(grid, f'{instruction[0]} {axis}')
         # fold up
         if instruction[0] == 'y':
-            for y in range(axis):
-                y_mirror = max_y - y
-                for x in range(max_x+1):
-                    if grid[y_mirror][x] == '#':
-                        grid[y][x] = '#'
-                del grid[y_mirror]
-            if (max_y + 1) % 2 != 0: # if folding on a line, and not between two
-                del grid[axis]
-
+            grid = fold_up(grid, axis)
         # fold left
         if instruction[0] == 'x':
-            for y in range(max_y+1):
-                for x in range(axis):
-                    x_mirror = max_x - x
-                    if grid[y][x_mirror] == '#':
-                        grid[y][x] = '#'
-                    del grid[y][x_mirror]
-                if (max_x + 1) % 2 != 0: # if folding on a line, and not between two
-                    del grid[y][axis]
+            grid = fold_left(grid, axis)
+        # break # part 1
     
-    print(len(grid[0]))
-    # print_grid(grid)
+    print_count(grid, 'final')
+    print_grid(grid)
     print()
 
-    return reduce(operator.add, (1 for row in grid for column in row if column == '.'))
+    return reduce(operator.add, (1 for row in grid for column in row if column == '#'))
+
+steps = 0
+def print_count(grid, axis):
+    global steps
+    print('_' * 20)
+    print(axis)
+    print(steps, reduce(operator.add, (1 for row in grid for column in row if column == '#')))
+    steps += 1
 
 def main():
     points, instructions = get_data()
