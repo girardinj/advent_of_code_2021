@@ -1,0 +1,29 @@
+#!/bin/bash
+
+touch ../data/data_$1.txt
+touch ../data_example/data_$1.txt
+touch $1.py
+
+echo -e "from generic import get_raw_data, get_raw_data_example" > $1.py
+echo -e "" >> $1.py
+echo -e "def get_data():" >> $1.py
+echo -e "\treturn ''" >> $1.py
+echo -e "" >> $1.py
+echo -e "def exo1():" >> $1.py
+echo -e "\treturn ''" >> $1.py
+echo -e "" >> $1.py
+echo -e "def exo2():" >> $1.py
+echo -e "\treturn ''" >> $1.py
+echo -e "" >> $1.py
+echo -e "def main():" >> $1.py
+echo -e "\tprint(exo1())" >> $1.py
+echo -e "\tprint(exo2())" >> $1.py
+echo -e "" >> $1.py
+echo -e "if __name__ == '__main__':" >> $1.py
+echo -e "\tmain()" >> $1.py
+
+
+
+code ../data_example/data_$1.txt
+code ../data/data_$1.txt
+code $1.py
