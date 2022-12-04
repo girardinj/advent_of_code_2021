@@ -27,9 +27,6 @@ class Choice(Enum):
 		else:
 			return None
 
-	
-
-
 class Strat():
 	def __init__(self, opponent, you, exo_num):
 		
